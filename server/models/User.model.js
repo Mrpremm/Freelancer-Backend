@@ -59,5 +59,22 @@ const userSchema=new mongoose.Schema(
 }
 );
 
+//Hash password 
+userSchema.pre('save',async function(next){
+  if(!this.isModified('password')) return next();
+  try{
+    const salt=await bcrypt.genSalt(10);
+    this.password=await bcrypt.hash(this.password,salt);
+    next();
+  }catch(error){
+    next(error);
+  }
+})
+
+//Compare passowrd
+
+userSchema.method.comparePassword=async function(candidatepassword){
+  return await bcrypt.compare(candidatepassword,this.password);
+};
 
 module.exports = mongoose.model('User', userSchema);

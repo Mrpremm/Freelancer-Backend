@@ -127,4 +127,46 @@ const updateGig = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports={createGig};
+//Deleting
+const deleteGig = asyncHandler(async (req, res) => {
+  const gig = await Gig.findById(req.params.id);
+
+  if (!gig) {
+    res.status(404);
+    throw new Error('Gig not found');
+  }
+
+  // Check if user is the gig owner
+  if (gig.freelancer.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to delete this gig');
+  }
+
+  // Soft delete by marking as inactive
+  gig.isActive = false;
+  await gig.save();
+
+  res.json({
+    success: true,
+    message: 'Gig deleted successfully',
+  });
+});
+
+//Get gig by freelancer
+const getMyGigs = asyncHandler(async (req, res) => {
+  const gigs = await Gig.find({ freelancer: req.user._id, isActive: true })
+    .sort('-createdAt');
+
+  res.json({
+    success: true,
+    count: gigs.length,
+    gigs,
+  });
+});
+
+
+module.exports={createGig,getGigs,
+  getGigById,
+  updateGig,
+  deleteGig,
+  getMyGigs,};

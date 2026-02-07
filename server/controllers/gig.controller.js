@@ -76,5 +76,28 @@ const getGigs=asyncHandler(async (req,res)=>{
 })
 
 //Get gig by ID
+const getGigById = asyncHandler(async (req, res) => {
+  const gig = await Gig.findById(req.params.id)
+    .populate('freelancer', 'name rating totalReviews bio skills profilePicture')
+    .populate({
+      path: 'reviews',
+      populate: {
+        path: 'client',
+        select: 'name profilePicture',
+      },
+      options: { sort: { createdAt: -1 }, limit: 10 },
+    });
+
+  if (!gig || !gig.isActive) {
+    res.status(404);
+    throw new Error('Gig not found');
+  }
+
+  res.json({
+    success: true,
+    gig,
+  });
+});
+
 
 module.exports={createGig};

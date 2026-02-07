@@ -82,5 +82,31 @@ const getMe=asyncHandler(async (req,res)=>{
 })
 
 //Update profile
-
-module.exports={registerUser,login}
+const updateProfile=asyncHandler(async (req,res)=>{
+  const user=await User.findById(req.user._id);
+  if(user){
+     user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.bio = req.body.bio || user.bio;
+    user.skills = req.body.skills || user.skills;
+    if(req.body.password){
+      user.password=req.body.password;
+    }
+    const updatedUser=await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      profilePicture: updatedUser.profilePicture,
+      skills: updatedUser.skills,
+      bio: updatedUser.bio,
+      rating: updatedUser.rating,
+      token: generateToken(updatedUser._id),
+    })
+  }else{
+    res.status(404);
+    throw new Error('User not found');
+  }
+})
+module.exports={registerUser,login,getMe,updateProfile};

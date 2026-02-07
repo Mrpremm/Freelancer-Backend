@@ -31,5 +31,50 @@ const createGig =[
   }),
 ]
 
+//GEt all gigs
+const getGigs=asyncHandler(async (req,res)=>{
+  const{search,category,minPrice,maxPrice,
+    sort='=createdAt',
+    page=1,
+    limit=10,
+  }=req.query;
+  const query={isActive:true};
+
+  if(search){
+    query.$text={$search:search};
+  }
+
+  //filter by category
+  if(category){
+    query.category=category;
+  }
+  if(minPrice||maxPrice){
+    query.price={};
+    if(minPrice) query.price.$gte=parseFloat(minPrice);
+    if(maxPrice) query.price.$lte=parseFloat(maxPrice);
+  }
+  const currentPage = parseInt(page);
+  const itemsPerPage = parseInt(limit);
+  const skip = (currentPage - 1) * itemsPerPage;
+
+  const gigs = await Gig.find(query)
+    .skip(skip)
+    .limit(itemsPerPage)
+    .populate('freelancer', 'name rating profilePicture')
+    .sort(sort);
+
+    const total = await Gig.countDocuments(query);
+
+  res.json({
+    success: true,
+    count: gigs.length,
+    total,
+    totalPages: Math.ceil(total / itemsPerPage),
+    currentPage,
+    gigs,
+  });
+})
+
+//Get gig by ID
 
 module.exports={createGig};

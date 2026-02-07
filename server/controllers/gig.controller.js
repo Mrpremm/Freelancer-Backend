@@ -100,4 +100,31 @@ const getGigById = asyncHandler(async (req, res) => {
 });
 
 
+//Updating
+const updateGig = asyncHandler(async (req, res) => {
+  let gig = await Gig.findById(req.params.id);
+
+  if (!gig) {
+    res.status(404);
+    throw new Error('Gig not found');
+  }
+
+  // Check if user is the gig owner
+  if (gig.freelancer.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to update this gig');
+  }
+
+  gig = await Gig.findByIdAndUpdate(
+    req.params.id,
+    { $set: req.body },
+    { new: true, runValidators: true }
+  );
+
+  res.json({
+    success: true,
+    gig,
+  });
+});
+
 module.exports={createGig};

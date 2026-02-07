@@ -38,3 +38,35 @@ const getFreelancers=asyncHandler(async (req,res)=>{
 });
 
 //get freelancer by ID
+
+const getFreelancerById=asyncHandler(async (req,res)=>{
+  const freelancer=await User.findById(req.params.id)
+  .select('-password')
+  .populate({
+    path:'gigs',
+    select:'title price rating totalReview category',
+    options:{limit:10},
+
+  });
+  if(!freelancer || freelancer.role!=='freelancer'){
+    res.status(404);
+    throw new Error('Freelancer not found');
+  }
+  res.json({
+    success:true,
+    freelancer,
+  });
+});
+
+//Update rating
+
+const updateRating=asyncHandler(async (req,res)=>{
+  const {rating,review}=req.body;
+  const freelancer=await User.findById(req.params.id);
+  if(!freelancer || freelancer.role!=='freelancer'){
+    res.status(404);
+    throw new Error('Freelancer not found');
+  }
+  
+});
+module.exports={getFreelancers,getFreelancerById,updateRating};

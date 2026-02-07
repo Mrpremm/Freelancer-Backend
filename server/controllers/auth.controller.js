@@ -58,5 +58,29 @@ const login=asyncHandler(async (req, res)=>{
 });
 
 
+//Profile
+const getMe=asyncHandler(async (req,res)=>{
+  const user=await User.findById(req.user._id);
+  if(user){
+    res.json({
+
+      _id:user._id,
+      name:user.name,
+      email:user.email,
+      role:user.role,
+      profilePicture:user.profilePicture,
+      skills:user.skills,
+      bio:user.bio,
+      rating:user.rating,
+      totalReviews:user.totalReviews,
+      createdAt:user.createdAt,
+    });
+  }else{
+    res.status(404);
+    throw new Error('User not found');
+  }
+})
+
+//Update profile
 
 module.exports={registerUser,login}

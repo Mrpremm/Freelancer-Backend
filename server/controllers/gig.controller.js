@@ -30,3 +30,6 @@ const createGig =[
     });
   }),
 ]
+
+
+module.exports={createGig};

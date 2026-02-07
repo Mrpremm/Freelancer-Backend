@@ -73,6 +73,29 @@ const gigSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+// Index for search Performace
+gigSchema.index({title:'text',description:'text',category:'text'});
 
+gigSchema.virtual('reviews',{
+  ref:'Review',
+  localField:'_id',
+  foreignField:'gig',
+});
+
+//Middleware trigger
+anges
+gigSchema.post('save', async function () {
+  if (this.totalReviews > 0) {
+    const User = mongoose.model('User');
+    const gigs = await this.constructor.find({ freelancer: this.freelancer });
+    const totalRating = gigs.reduce((sum, gig) => sum + gig.rating, 0);
+    const averageRating = totalRating / gigs.length;
+    
+    await User.findByIdAndUpdate(this.freelancer, {
+      rating: parseFloat(averageRating.toFixed(1)),
+      totalReviews: gigs.reduce((sum, gig) => sum + gig.totalReviews, 0),
+    });
+  }
+});
 
 module.exports=mongoose.model('Gig',gigSchema);

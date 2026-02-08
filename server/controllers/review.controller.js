@@ -57,4 +57,12 @@ const getGigReviews=asyncHandler(async (req ,res)=>{
   const currentPage = parseInt(page);
   const itemsPerPage = parseInt(limit);
   const skip = (currentPage - 1) * itemsPerPage;
+
+  const reviews = await Review.find({ gig: req.params.gigId })
+    .skip(skip)
+    .limit(itemsPerPage)
+    .populate('client', 'name profilePicture')
+    .sort('-createdAt');
+
+
 })

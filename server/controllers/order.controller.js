@@ -168,3 +168,35 @@ order.status = 'Completed';
     order,
   });
 })
+
+//Get Single Order
+const getOrderById=asyncHandler(async (req,res)=>{
+  const order = await Order.findById(req.params.id)
+    .populate('gig', 'title description images price category deliveryTime')
+    .populate('client', 'name profilePicture')
+    .populate('freelancer', 'name profilePicture rating');
+
+     if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+   const isClient = order.client._id.toString() === req.user._id.toString();
+  const isFreelancer = order.freelancer._id.toString() === req.user._id.toString();
+  if (!isClient && !isFreelancer) {
+    res.status(403);
+    throw new Error('Not authorized to view this order');
+  }
+
+  res.json({
+    success: true,
+    order,
+  });
+  
+})
+
+module.exports={ createOrder,
+  getClientOrders,
+  getFreelancerOrders,
+  updateOrderStatus,
+  acceptOrder,
+  getOrderById,}

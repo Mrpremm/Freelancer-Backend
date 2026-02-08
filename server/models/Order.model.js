@@ -60,5 +60,16 @@ orderSchema.virtual('review', {
   foreignField: 'order',
   justOne: true,
 });
-
+orderSchema.pre('save', async function (next) {
+  if (this.isNew) {
+    const Gig = mongoose.model('Gig');
+    const gig = await Gig.findById(this.gig);
+    if (gig) {
+      const deliveryDate = new Date();
+      deliveryDate.setDate(deliveryDate.getDate() + gig.deliveryTime);
+      this.deliveryDate = deliveryDate;
+    }
+  }
+  next();
+});
 module.exports = mongoose.model('Order', orderSchema);

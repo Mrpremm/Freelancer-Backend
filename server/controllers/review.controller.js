@@ -78,7 +78,7 @@ const total = await Review.countDocuments({ gig: req.params.gigId });
 
 //GEting reviews for a freeLancer
 
-const getFreeLancerReviews=asyncHandler(async (res,req)=>{
+const getFreelancerReviews=asyncHandler(async (req,res)=>{
   const { page = 1, limit = 10 } = req.query;
 
   const currentPage = parseInt(page);
@@ -102,3 +102,31 @@ const getFreeLancerReviews=asyncHandler(async (res,req)=>{
     reviews,
   });
 })
+
+//Deleting Review
+
+const deleteReview=asyncHandler(async (req,res)=>{
+const review = await Review.findById(req.params.id);
+
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+  if (review.client.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to delete this review');
+  }
+   await review.remove();
+
+  res.json({
+    success: true,
+    message: 'Review deleted successfully',
+  });
+})
+
+module.exports={
+   createReview,
+  getGigReviews,
+  getFreelancerReviews,
+  deleteReview,
+}

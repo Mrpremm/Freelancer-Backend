@@ -63,6 +63,15 @@ const getGigReviews=asyncHandler(async (req ,res)=>{
     .limit(itemsPerPage)
     .populate('client', 'name profilePicture')
     .sort('-createdAt');
+const total = await Review.countDocuments({ gig: req.params.gigId });
 
+  res.json({
+    success: true,
+    count: reviews.length,
+    total,
+    totalPages: Math.ceil(total / itemsPerPage),
+    currentPage,
+    reviews,
+  });
 
 })

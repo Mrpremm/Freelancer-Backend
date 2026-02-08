@@ -139,3 +139,32 @@ const updateOrderStatus=asyncHandler(async (req ,res)=>{
     order,
   });
 })
+
+//Accepting delivered Order
+const acceptOrder=asyncHandler(async (req,res)=>{
+const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  //Checking if user is the client who placed the Order
+  if (order.client.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to accept this order');
+  }
+ // Check if order is in delivered status
+  if (order.status !== 'Delivered') {
+    res.status(400);
+    throw new Error('Only delivered orders can be accepted');
+  }
+order.status = 'Completed';
+  await order.save();
+
+  res.json({
+    success: true,
+    message: 'Order completed successfully',
+    order,
+  });
+})

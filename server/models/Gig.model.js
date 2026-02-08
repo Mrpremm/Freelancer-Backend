@@ -73,17 +73,18 @@ const gigSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-// Index for search Performace
-gigSchema.index({title:'text',description:'text',category:'text'});
 
-gigSchema.virtual('reviews',{
-  ref:'Review',
-  localField:'_id',
-  foreignField:'gig',
+// Index for search functionality
+gigSchema.index({ title: 'text', description: 'text', category: 'text' });
+
+// Virtual for reviews
+gigSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'gig',
 });
 
-//Middleware trigger
-anges
+// Middleware to update freelancer's rating when gig rating changes
 gigSchema.post('save', async function () {
   if (this.totalReviews > 0) {
     const User = mongoose.model('User');
@@ -98,4 +99,4 @@ gigSchema.post('save', async function () {
   }
 });
 
-module.exports=mongoose.model('Gig',gigSchema);
+module.exports = mongoose.model('Gig', gigSchema);

@@ -103,3 +103,39 @@ const getFreelancerOrders=asyncHandler(async (req , res)=>{
     orders,
   });
 })
+
+//Update Order
+const updateOrderStatus=asyncHandler(async (req ,res)=>{
+  const {status}=req.body;
+  const allowedStatuses=['In Progess','Delivered'];
+  if(!allowedStatuses.includes(status)){
+    res.status(400);
+    throw new Error(`Status must be one of: ${allowedStatuses.join(', ')}`);
+  }
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  if (order.freelancer.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to update this order');
+  }
+  //Checking valid transitions
+   if (status === 'In Progress' && order.status !== 'Pending') {
+    res.status(400);
+    throw new Error('Only pending orders can be marked as in progress');
+  }
+   if (status === 'Delivered' && order.status !== 'In Progress') {
+    res.status(400);
+    throw new Error('Only orders in progress can be marked as delivered'); }
+     order.status = status;
+  await order.save();
+
+  res.json({
+    success: true,
+    order,
+  });
+})

@@ -73,3 +73,33 @@ const getClientOrders=asyncHandler(async (req,res)=>{
 })
 
 //Get Freelancer Orders
+const getFreelancerOrders=asyncHandler(async (req , res)=>{
+  const { status, page = 1, limit = 10 } = req.query;
+
+  const query = { freelancer: req.user._id };
+  
+  if (status) {
+    query.status = status;
+  }
+  const currentPage = parseInt(page);
+  const itemsPerPage = parseInt(limit);
+  const skip = (currentPage - 1) * itemsPerPage;
+
+  const orders = await Order.find(query)
+    .skip(skip)
+    .limit(itemsPerPage)
+    .populate('gig', 'title images price category')
+    .populate('client', 'name profilePicture')
+    .sort('-createdAt');
+
+  const total = await Order.countDocuments(query);
+
+  res.json({
+    success: true,
+    count: orders.length,
+    total,
+    totalPages: Math.ceil(total / itemsPerPage),
+    currentPage,
+    orders,
+  });
+})

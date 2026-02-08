@@ -45,5 +45,31 @@ res.status(201).json({
 //Get Client Orders
 
 const getClientOrders=asyncHandler(async (req,res)=>{
-  
+  const {status,page=1,limit=10}=req.query;
+  const query={client:req.user._id};
+  if(status){
+    query.status=status;
+  }
+  const currentPage=parseInt(page);
+  const itemsPerPage=parseInt(limit);
+  const skip=(currentPage-1)*itemsPerPage;
+
+  const orders = await Order.find(query)
+    .skip(skip)
+    .limit(itemsPerPage)
+    .populate('gig', 'title images price category')
+    .populate('freelancer', 'name profilePicture rating')
+    .sort('-createdAt');
+    const total = await Order.countDocuments(query);
+
+  res.json({
+    success: true,
+    count: orders.length,
+    total,
+    totalPages: Math.ceil(total / itemsPerPage),
+    currentPage,
+    orders,
+  });
 })
+
+//Get Freelancer Orders

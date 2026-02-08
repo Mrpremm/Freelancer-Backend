@@ -44,3 +44,17 @@ const createReview =asyncHandler(async (req ,res)=>{
     review,
   });
 })
+
+//geting review for a gig
+const getGigReviews=asyncHandler(async (req ,res)=>{
+  const { page = 1, limit = 10 } = req.query;
+  //Check if gig exists
+  const gig = await Gig.findById(req.params.gigId);
+  if (!gig) {
+    res.status(404);
+    throw new Error('Gig not found');
+  }
+  const currentPage = parseInt(page);
+  const itemsPerPage = parseInt(limit);
+  const skip = (currentPage - 1) * itemsPerPage;
+})

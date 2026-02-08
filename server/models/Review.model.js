@@ -39,6 +39,28 @@ const reviewSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+// Indexes for efficient queries
+reviewSchema.index({ gig: 1, createdAt: -1 });
+reviewSchema.index({ freelancer: 1, createdAt: -1 });
+reviewSchema.index({ order: 1 }, { unique: true });
+
+reviewSchema.post('save', async function () {
+  const Gig = mongoose.model('Gig');
+  const Order = mongoose.model('Order');
+  
+  // Update order status to Completed if not already
+  await Order.findByIdAndUpdate(this.order, { status: 'Completed' });
+  
+  // Calculate new average rating for the gig
+  const reviews = await this.constructor.find({ gig: this.gig });
+  const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+  const averageRating = totalRating / reviews.length;
+  
+  await Gig.findByIdAndUpdate(this.gig, {
+    rating: parseFloat(averageRating.toFixed(1)),
+    totalReviews: reviews.length,
+  });
+});
 
 
 

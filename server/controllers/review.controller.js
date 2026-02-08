@@ -1,0 +1,46 @@
+const asyncHandler=require('express-async-handler');
+const Review=require('../models/Review.model');
+const order=require('../models/Order.model');
+const Gig=require('../models/Gig.model');
+const OrderModel = require('../models/Order.model');
+
+//create Review
+
+const createReview =asyncHandler(async (req ,res)=>{
+  const {orderId,rating,comment}=req.body;
+  const order=await OrderModel.findById(orderId);
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+  // Check if user is the client who placed the order
+  if (order.client.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to review this order');
+  }
+  // Check if order is completed
+  if (order.status !== 'Completed') {
+    res.status(400);
+    throw new Error('Only completed orders can be reviewed');
+  }
+  // Check if review already exists for this order
+  const existingReview = await Review.findOne({ order: orderId });
+  if (existingReview) {
+    res.status(400);
+    throw new Error('You have already reviewed this order');
+  }
+// Create review
+  const review = await Review.create({
+    order: orderId,
+    gig: order.gig,
+    client: req.user._id,
+    freelancer: order.freelancer,
+    rating,
+    comment,
+  });
+
+  res.status(201).json({
+    success: true,
+    review,
+  });
+})

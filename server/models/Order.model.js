@@ -48,7 +48,17 @@ const orderSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+//Indexes for effiecient queries
+orderSchema.index({ client: 1, createdAt: -1 });
+orderSchema.index({ freelancer: 1, createdAt: -1 });
+orderSchema.index({ status: 1 });
 
-
+// Virtual for reviews
+orderSchema.virtual('review', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'order',
+  justOne: true,
+});
 
 module.exports = mongoose.model('Order', orderSchema);

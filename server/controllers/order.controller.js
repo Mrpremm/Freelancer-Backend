@@ -199,4 +199,5 @@ module.exports={ createOrder,
   getFreelancerOrders,
   updateOrderStatus,
   acceptOrder,
-  getOrderById,}
+  getOrderById,
+}

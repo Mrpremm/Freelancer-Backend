@@ -8,7 +8,8 @@ const {notFound,errorHandler}=require('./middleware/error.middleware');
 const authRoutes=require('./routes/auth.routes');
 const userRoutes=require('./routes/user.routes');
 const gigRoutes=require('./routes/gig.routes');
-
+const orderRoutes=require('./routes/order.routes');
+const reviewRoutes=require('./routes/review.routes');
 const app=express();
 const limiter=rateLimit({
   windowMs:15*60*1000,
@@ -27,7 +28,8 @@ app.use(express.urlencoded({extended:true}));
 app.use('/api/auth',authRoutes);
 app.use('/api/users',userRoutes);
 app.use('/api/gigs',gigRoutes);
-
+app.use('/api/orders',orderRoutes);
+app.use('/api/reviews',reviewRoutes);
 
 //health
 app.get('/health',(req,res)=>{

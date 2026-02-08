@@ -1,6 +1,6 @@
 const asyncHandler=require('express-async-handler');
 const Review=require('../models/Review.model');
-const order=require('../models/Order.model');
+const Order=require('../models/Order.model');
 const Gig=require('../models/Gig.model');
 const OrderModel = require('../models/Order.model');
 
@@ -74,4 +74,31 @@ const total = await Review.countDocuments({ gig: req.params.gigId });
     reviews,
   });
 
+})
+
+//GEting reviews for a freeLancer
+
+const getFreeLancerReviews=asyncHandler(async (res,req)=>{
+  const { page = 1, limit = 10 } = req.query;
+
+  const currentPage = parseInt(page);
+  const itemsPerPage = parseInt(limit);
+  const skip = (currentPage - 1) * itemsPerPage;
+
+  const reviews = await Review.find({ freelancer: req.params.freelancerId })
+    .skip(skip)
+    .limit(itemsPerPage)
+    .populate('client', 'name profilePicture')
+    .populate('gig', 'title')
+    .sort('-createdAt');
+    const total = await Review.countDocuments({ freelancer: req.params.freelancerId });
+
+  res.json({
+    success: true,
+    count: reviews.length,
+    total,
+    totalPages: Math.ceil(total / itemsPerPage),
+    currentPage,
+    reviews,
+  });
 })

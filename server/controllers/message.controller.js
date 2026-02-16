@@ -41,6 +41,7 @@ const getMessages = asyncHandler(async (req, res) => {
     success: true,
     count: messages.length,
     messages,
+    conversationId,
   });
 });
 

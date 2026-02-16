@@ -52,14 +52,18 @@ reviewSchema.post('save', async function () {
   await Order.findByIdAndUpdate(this.order, { status: 'Completed' });
   
   // Calculate new average rating for the gig
+  // Calculate new average rating for the gig
   const reviews = await this.constructor.find({ gig: this.gig });
   const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
   const averageRating = totalRating / reviews.length;
   
-  await Gig.findByIdAndUpdate(this.gig, {
-    rating: parseFloat(averageRating.toFixed(1)),
-    totalReviews: reviews.length,
-  });
+  // Use findById and save to trigger Gig middleware (which updates User stats)
+  const gig = await Gig.findById(this.gig);
+  if (gig) {
+    gig.rating = parseFloat(averageRating.toFixed(1));
+    gig.totalReviews = reviews.length;
+    await gig.save();
+  }
 });
 
 

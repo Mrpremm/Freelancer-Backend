@@ -15,9 +15,10 @@ const storage=new CloudinaryStorage({
     // Check if it's a resume/document
     if (file.fieldname === 'resume') {
       return {
-        folder: "freelance-marketplace/resumes",
-        resource_type: "raw", // Important for non-image files
-        format: "pdf", // Force PDF or keep original extension if possible, but cloudinary raw usually keeps it
+        folder: "freelance-marketplace/raw_resumes", // New folder to ensure fresh settings
+        resource_type: "raw", // Force raw to avoid image/pdf view restrictions
+        type: "upload", // Explicitly public
+        access_mode: "public",
         public_id: `resume-${req.user._id}-${Date.now()}`
       };
     }

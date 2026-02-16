@@ -1,0 +1,20 @@
+Starting Log
+MongoDB Connected: ac-cavbmry-shard-00-01.riqmb3i.mongodb.net
+Starting recalculation...
+Found Freelancer: Prem Prasad (6988b214c789f743aa04ff9e)
+Specific Gig found: makes UI project (698b6b06d0084b6d9c5fe1b3)
+  Owner: 698b363d242940d2af26d329
+  Current Rating: 4, Reviews: 1
+  Owner DOES NOT MATCH Prem Prasad (6988b214c789f743aa04ff9e)
+  Real Owner: Prem Prasad (698b363d242940d2af26d329)
+Found 3 gigs.
+Checking reviews for gig: I will design a modern logo for your brand (698b585d03711876fc35f3d3)
+Checking reviews for gig: i will design this page (698b620581dede20a675b8bb)
+Updated Gig: i will design this page - Rating: 5, Reviews: 1
+Checking reviews for gig: makes UI project (698b6b06d0084b6d9c5fe1b3)
+Updated Gig: makes UI project - Rating: 4, Reviews: 1
+Found 3 freelancers.
+Updated Freelancer: Prem Prasad (6988b243c789f743aa04ffa5) - Rating: 0, Total Reviews: 0, Gigs: 0
+Updated Freelancer: Prem Prasad (698b363d242940d2af26d329) - Rating: 4.5, Total Reviews: 2, Gigs: 3
+Updated Freelancer: Prem Prasad (6993229c191658c009258226) - Rating: 0, Total Reviews: 0, Gigs: 0
+Recalculation complete.

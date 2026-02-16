@@ -10,12 +10,60 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 // @route   POST /api/payment/create-checkout-session
 // @access  Private (Client only)
 const createCheckoutSession = asyncHandler(async (req, res) => {
-  const { gigId } = req.body;
+  const { gigId, orderId } = req.body;
 
-  const gig = await Gig.findById(gigId).populate('freelancer');
-  if (!gig) {
-    res.status(404);
-    throw new Error('Gig not found');
+  let sessionData = {};
+  let metadata = {};
+
+  if (orderId) {
+    const order = await Order.findById(orderId).populate('gig');
+    if (!order) {
+      res.status(404);
+      throw new Error('Order not found');
+    }
+    if (order.client.toString() !== req.user._id.toString()) {
+      res.status(403);
+      throw new Error('Not authorized to pay for this order');
+    }
+    if (order.status !== 'Approved') {
+      res.status(400);
+      throw new Error('Order must be approved by freelancer before payment');
+    }
+
+    sessionData = {
+      name: order.gig.title,
+      description: `Payment for Order #${order._id}`,
+      images: order.gig.images && order.gig.images.length > 0 ? [order.gig.images[0]] : [],
+      amount: Math.round(order.amount * 100),
+    };
+
+    metadata = {
+      orderId: order._id.toString(),
+      gigId: order.gig._id.toString(),
+      freelancerId: order.freelancer.toString(),
+      type: 'order_payment'
+    };
+
+  } else if (gigId) {
+     const gig = await Gig.findById(gigId).populate('freelancer');
+    if (!gig) {
+      res.status(404);
+      throw new Error('Gig not found');
+    }
+    sessionData = {
+      name: gig.title,
+      description: gig.description.substring(0, 100) + '...',
+      images: gig.images && gig.images.length > 0 ? [gig.images[0]] : [],
+      amount: Math.round(gig.price * 100),
+    };
+    metadata = {
+      gigId: gig._id.toString(),
+      freelancerId: gig.freelancer._id.toString(),
+      type: 'direct_gig_payment' // Legacy or direct
+    };
+  } else {
+    res.status(400);
+    throw new Error('Gig ID or Order ID required');
   }
 
   // Create a stripe checkout session
@@ -26,11 +74,11 @@ const createCheckoutSession = asyncHandler(async (req, res) => {
         price_data: {
           currency: 'usd',
           product_data: {
-            name: gig.title,
-            description: gig.description.substring(0, 100) + '...',
-            images: gig.images && gig.images.length > 0 ? [gig.images[0]] : [],
+            name: sessionData.name,
+            description: sessionData.description,
+            images: sessionData.images,
           },
-          unit_amount: Math.round(gig.price * 100), // Stripe expects amounts in cents
+          unit_amount: sessionData.amount, // Stripe expects amounts in cents
         },
         quantity: 1,
       },
@@ -39,10 +87,7 @@ const createCheckoutSession = asyncHandler(async (req, res) => {
     success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/cancel`,
     client_reference_id: req.user._id.toString(), // Store user ID to link order
-    metadata: {
-      gigId: gig._id.toString(),
-      freelancerId: gig.freelancer._id.toString(),
-    },
+    metadata: metadata,
   });
 
   res.json({
@@ -86,7 +131,7 @@ const confirmPayment = asyncHandler(async (req, res) => {
   }
 
   // Create Order
-  const { gigId, freelancerId } = session.metadata;
+  const { gigId, freelancerId, orderId, type } = session.metadata;
   const clientId = session.client_reference_id;
 
   // Verify client matches (security check)
@@ -95,24 +140,44 @@ const confirmPayment = asyncHandler(async (req, res) => {
     throw new Error('Unauthorized access to this payment session');
   }
 
-  const gig = await Gig.findById(gigId);
-  if (!gig) {
-    res.status(404);
-    throw new Error('Gig not found for this order');
-  }
+  let order;
 
-  const order = await Order.create({
-    gig: gigId,
-    client: clientId,
-    freelancer: freelancerId,
-    amount: session.amount_total / 100, // Convert back to dollars
-    status: 'Pending',
-    stripeSessionId: sessionId,
-    paymentIntent: session.payment_intent,
-    isPaid: true,
-    paidAt: Date.now(),
-    requirements: "Client has paid. Pending requirements submission." // Placeholder or handle specifically
-  });
+  if (orderId) {
+      order = await Order.findById(orderId);
+      if (!order) {
+          res.status(404);
+          throw new Error('Order not found');
+      }
+      
+      // Update existing order
+      order.status = 'In Progress';
+      order.stripeSessionId = sessionId;
+      order.paymentIntent = session.payment_intent;
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      
+      await order.save();
+  } else {
+      // Legacy flow: Create new order (if direct payment was used)
+      const gig = await Gig.findById(gigId);
+      if (!gig) {
+        res.status(404);
+        throw new Error('Gig not found for this order');
+      }
+
+      order = await Order.create({
+        gig: gigId,
+        client: clientId,
+        freelancer: freelancerId,
+        amount: session.amount_total / 100, // Convert back to dollars
+        status: 'In Progress', // Direct payment goes straight to In Progress
+        stripeSessionId: sessionId,
+        paymentIntent: session.payment_intent,
+        isPaid: true,
+        paidAt: Date.now(),
+        requirements: "Client has paid directly. Pending requirements submission." 
+      });
+  }
 
   res.status(201).json({
     success: true,

@@ -65,6 +65,10 @@ const getMe = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      title: user.title,
+      hourlyRate: user.hourlyRate,
+      location: user.location,
+      website: user.website,
       profilePicture: user.profilePicture,
       skills: user.skills,
       bio: user.bio,
@@ -123,11 +127,21 @@ const updateProfile = asyncHandler(async (req, res) => {
     user.bio = req.body.bio || user.bio;
     user.skills = req.body.skills ? (typeof req.body.skills === 'string' ? req.body.skills.split(',') : req.body.skills) : user.skills;
     
+    // Add missing fields
+    user.title = req.body.title || user.title;
+    user.hourlyRate = req.body.hourlyRate || user.hourlyRate;
+    user.location = req.body.location || user.location;
+    user.website = req.body.website || user.website;
+
     // Enhanced fields
     if (req.body.education) user.education = parseIfString(req.body.education);
     if (req.body.experience) user.experience = parseIfString(req.body.experience);
     if (req.body.projects) user.projects = parseIfString(req.body.projects);
+    if (req.body.projects) user.projects = parseIfString(req.body.projects);
     if (req.body.socialLinks) user.socialLinks = parseIfString(req.body.socialLinks);
+
+    // Resume (URL support)
+    if (req.body.resume) user.resume = req.body.resume;
 
     if (req.body.password) {
       user.password = req.body.password;
@@ -140,6 +154,10 @@ const updateProfile = asyncHandler(async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       role: updatedUser.role,
+      title: updatedUser.title,
+      hourlyRate: updatedUser.hourlyRate,
+      location: updatedUser.location,
+      website: updatedUser.website,
       profilePicture: updatedUser.profilePicture,
       skills: updatedUser.skills,
       bio: updatedUser.bio,

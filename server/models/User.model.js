@@ -27,6 +27,28 @@ const userSchema = new mongoose.Schema(
       enum: ['client', 'freelancer'], // ONLY two roles - removed 'admin'
       default: 'client',
     },
+    // Public freelancer profile fields
+    title: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Title cannot exceed 100 characters'],
+      default: '',
+    },
+    hourlyRate: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    location: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    website: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     profilePicture: {
       type: String,
       default: '',
@@ -93,8 +115,17 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
   }
 );
+
+// Virtual populate
+userSchema.virtual('gigs', {
+  ref: 'Gig',
+  foreignField: 'freelancer',
+  localField: '_id'
+});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {

@@ -107,7 +107,7 @@ const getFreelancerOrders=asyncHandler(async (req , res)=>{
 //Update Order
 const updateOrderStatus=asyncHandler(async (req ,res)=>{
   const {status}=req.body;
-  const allowedStatuses=['In Progress','Delivered'];
+  const allowedStatuses=['Approved', 'In Progress','Delivered'];
   if(!allowedStatuses.includes(status)){
     res.status(400);
     throw new Error(`Status must be one of: ${allowedStatuses.join(', ')}`);
@@ -124,9 +124,13 @@ const updateOrderStatus=asyncHandler(async (req ,res)=>{
     throw new Error('Not authorized to update this order');
   }
   //Checking valid transitions
-   if (status === 'In Progress' && order.status !== 'Pending') {
+   if (status === 'Approved' && order.status !== 'Pending') {
     res.status(400);
-    throw new Error('Only pending orders can be marked as in progress');
+    throw new Error('Only pending orders can be approved');
+  }
+   if (status === 'In Progress' && order.status !== 'Approved') {
+    res.status(400);
+    throw new Error('Only approved orders can be marked as in progress (after payment)');
   }
    if (status === 'Delivered' && order.status !== 'In Progress') {
     res.status(400);

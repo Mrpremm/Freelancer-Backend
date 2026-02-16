@@ -24,7 +24,7 @@ const createOrder=asyncHandler (async (req,res)=>{
   });
   if(existingOrder){
     res.status(400);
-    throw new Error('You already have an order for thsi gig');
+    throw new Error('You already have an active order for this gig');
   }
 //Create order
 const order=await Order.create({
@@ -107,7 +107,7 @@ const getFreelancerOrders=asyncHandler(async (req , res)=>{
 //Update Order
 const updateOrderStatus=asyncHandler(async (req ,res)=>{
   const {status}=req.body;
-  const allowedStatuses=['In Progess','Delivered'];
+  const allowedStatuses=['In Progress','Delivered'];
   if(!allowedStatuses.includes(status)){
     res.status(400);
     throw new Error(`Status must be one of: ${allowedStatuses.join(', ')}`);
@@ -196,11 +196,42 @@ const getOrderById = asyncHandler(async (req, res) => {
     order,
   });
 });
+//Cancel Order
+const cancelOrder=asyncHandler(async (req,res)=>{
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  // Allow both client and freelancer to cancel if status is not Completed
+  if (order.client.toString() !== req.user._id.toString() && 
+      order.freelancer.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Not authorized to cancel this order');
+  }
+
+  if (order.status === 'Completed') {
+    res.status(400);
+    throw new Error('Cannot cancel a completed order');
+  }
+
+  order.status = 'Cancelled';
+  await order.save();
+
+  res.json({
+    success: true,
+    message: 'Order cancelled successfully',
+    order,
+  });
+})
 
 module.exports={ createOrder,
   getClientOrders,
   getFreelancerOrders,
   updateOrderStatus,
   acceptOrder,
+  cancelOrder,
   getOrderById,
 }

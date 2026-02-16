@@ -10,16 +10,27 @@ const userRoutes=require('./routes/user.routes');
 const gigRoutes=require('./routes/gig.routes');
 const orderRoutes=require('./routes/order.routes');
 const reviewRoutes=require('./routes/review.routes');
+const messageRoutes=require('./routes/message.routes');
+const paymentRoutes=require('./routes/payment.routes');
+const conversationRoutes=require('./routes/conversation.routes');
+
 const app=express();
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 const limiter=rateLimit({
   windowMs:15*60*1000,
-  max:100,
+  max: 10000, 
   message:'Too many requests from this IP ,please try again Later,',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use(limiter);
-app.use(helmet());
-app.use(cors());
-
+// app.use(limiter); 
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
@@ -30,6 +41,9 @@ app.use('/api/users',userRoutes);
 app.use('/api/gigs',gigRoutes);
 app.use('/api/orders',orderRoutes);
 app.use('/api/reviews',reviewRoutes);
+app.use('/api/messages',messageRoutes);
+app.use('/api/payment',paymentRoutes);
+app.use('/api/conversations',conversationRoutes);
 
 //health
 app.get('/health',(req,res)=>{
@@ -41,6 +55,5 @@ app.get('/health',(req,res)=>{
 });
 app.use(notFound);
 app.use(errorHandler);
-
 
 module.exports=app;

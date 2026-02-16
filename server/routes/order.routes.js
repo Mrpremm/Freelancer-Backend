@@ -6,6 +6,7 @@ const {
   getFreelancerOrders,
   updateOrderStatus,
   acceptOrder,
+  cancelOrder,
   getOrderById,
 } = require('../controllers/order.controller');
 const { protect } = require('../middleware/auth.middleware');
@@ -20,5 +21,6 @@ router.get('/freelancer', protect, authorize('freelancer'), getFreelancerOrders)
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, authorize('freelancer'), updateOrderStatus);
 router.put('/:id/accept', protect, authorize('client'), acceptOrder);
+router.put('/:id/cancel', protect, cancelOrder); // Allow both roles to cancel
 
 module.exports = router;

@@ -124,9 +124,27 @@ const review = await Review.findById(req.params.id);
   });
 })
 
+// Get review by order ID
+const getReviewByOrder = asyncHandler(async (req, res) => {
+  const review = await Review.findOne({ order: req.params.orderId })
+    .populate('client', 'name profilePicture')
+    .populate('freelancer', 'name profilePicture');
+
+  if (!review) {
+    res.status(404);
+    throw new Error('Review not found');
+  }
+
+  res.json({
+    success: true,
+    review,
+  });
+});
+
 module.exports={
    createReview,
   getGigReviews,
   getFreelancerReviews,
   deleteReview,
+  getReviewByOrder,
 }

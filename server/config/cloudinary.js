@@ -11,14 +11,27 @@ cloudinary.config({
 
 const storage=new CloudinaryStorage({
   cloudinary:cloudinary,
-  params:{
-    folder:"freelance-marketplace",
-    allowed_formats:['jpg','png','jpeg','gif','webp','svg'],
-    transformation:[{
-      width:500,
-      height:500,
-      crop:"fill"
-    }],
+  params: async (req, file) => {
+    // Check if it's a resume/document
+    if (file.fieldname === 'resume') {
+      return {
+        folder: "freelance-marketplace/resumes",
+        resource_type: "raw", // Important for non-image files
+        format: "pdf", // Force PDF or keep original extension if possible, but cloudinary raw usually keeps it
+        public_id: `resume-${req.user._id}-${Date.now()}`
+      };
+    }
+    
+    // Default for images
+    return {
+      folder: "freelance-marketplace",
+      allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp', 'svg'],
+      transformation: [{
+        width: 500,
+        height: 500,
+        crop: "fill"
+      }],
+    };
   },
 });
 module.exports={cloudinary,storage}

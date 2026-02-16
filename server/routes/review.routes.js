@@ -5,12 +5,15 @@ const {
   getGigReviews,
   getFreelancerReviews,
   deleteReview,
+  getReviewByOrder,
 } = require('../controllers/review.controller');
 const { protect } = require('../middleware/auth.middleware');
 const { authorize } = require('../middleware/role.middleware');
 
 router.route('/')
   .post(protect, authorize('client'), createReview);
+
+router.get('/order/:orderId', protect, getReviewByOrder);
 
 router.get('/gig/:gigId', getGigReviews);
 router.get('/freelancer/:freelancerId', getFreelancerReviews);

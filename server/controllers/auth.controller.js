@@ -70,6 +70,11 @@ const getMe = asyncHandler(async (req, res) => {
       bio: user.bio,
       rating: user.rating,
       totalReviews: user.totalReviews,
+      education: user.education,
+      experience: user.experience,
+      projects: user.projects,
+      socialLinks: user.socialLinks,
+      resume: user.resume,
       createdAt: user.createdAt,
     });
   } else {
@@ -83,11 +88,46 @@ const updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
+    console.log('Update Profile Request Body:', req.body);
+    console.log('Update Profile Request Files:', req.files);
+
+    // Handle file uploads
+    if (req.files) {
+      if (req.files.profilePicture) {
+        user.profilePicture = req.files.profilePicture[0].path;
+      }
+      if (req.files.resume) {
+        user.resume = req.files.resume[0].path;
+      }
+    }
+
+    // Handle standard fields - parse JSON if it comes as string (FormData)
+    // When using FormData, everything is a string. If we send complex objects like 'socialLinks', 
+    // we might need to parse them if they are sent as JSON strings, or handle dot notation if sent as individual fields.
+    // Assuming the frontend sends key-value pairs or we parse them here.
+    
+    // Helper to parse if string
+    const parseIfString = (val) => {
+      if (typeof val === 'string') {
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return val;
+        }
+      }
+      return val;
+    };
+
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
     user.bio = req.body.bio || user.bio;
-    user.skills = req.body.skills || user.skills;
-    user.profilePicture = req.body.profilePicture || user.profilePicture;
+    user.skills = req.body.skills ? (typeof req.body.skills === 'string' ? req.body.skills.split(',') : req.body.skills) : user.skills;
+    
+    // Enhanced fields
+    if (req.body.education) user.education = parseIfString(req.body.education);
+    if (req.body.experience) user.experience = parseIfString(req.body.experience);
+    if (req.body.projects) user.projects = parseIfString(req.body.projects);
+    if (req.body.socialLinks) user.socialLinks = parseIfString(req.body.socialLinks);
 
     if (req.body.password) {
       user.password = req.body.password;
@@ -104,6 +144,11 @@ const updateProfile = asyncHandler(async (req, res) => {
       skills: updatedUser.skills,
       bio: updatedUser.bio,
       rating: updatedUser.rating,
+      education: updatedUser.education,
+      experience: updatedUser.experience,
+      projects: updatedUser.projects,
+      socialLinks: updatedUser.socialLinks,
+      resume: updatedUser.resume,
       token: generateToken(updatedUser._id),
     });
   } else {

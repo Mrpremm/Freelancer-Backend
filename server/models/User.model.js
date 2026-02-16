@@ -40,6 +40,42 @@ const userSchema = new mongoose.Schema(
       default: '',
       maxlength: [500, 'Bio cannot exceed 500 characters'],
     },
+    // Enhanced Profile Fields
+    education: [{
+      institution: String,
+      degree: String,
+      fieldOfStudy: String,
+      startYear: Number,
+      endYear: Number,
+      description: String
+    }],
+    experience: [{
+      title: String,
+      company: String,
+      location: String,
+      startDate: Date,
+      endDate: Date,
+      current: Boolean,
+      description: String
+    }],
+    projects: [{
+      title: String,
+      description: String,
+      image: String,
+      link: String,
+      skills: [String]
+    }],
+    socialLinks: {
+      linkedin: String,
+      github: String,
+      twitter: String,
+      website: String,
+      instagram: String
+    },
+    resume: {
+      type: String, // URL to resume file
+      default: ''
+    },
     rating: {
       type: Number,
       default: 0,

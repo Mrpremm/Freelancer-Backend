@@ -26,9 +26,18 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    stripeSessionId: {
+      type: String,
+    },
     paymentIntent: {
       type: String,
-      default: 'mock_payment_intent_id', // Replace with actual Stripe payment intent
+    },
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
+    paidAt: {
+      type: Date,
     },
     deliveryDate: {
       type: Date,

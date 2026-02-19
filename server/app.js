@@ -20,7 +20,7 @@ const app=express();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://freelancer-frontend-jet.vercel.app'],
   credentials: true
 }));
 

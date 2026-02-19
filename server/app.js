@@ -1,3 +1,4 @@
+const path = require('path');
 const express=require("express");
 const cors=require('cors');
 const helmet=require('helmet');
@@ -53,6 +54,20 @@ app.get('/health',(req,res)=>{
     timestamp:new Date().toISOString(),
   });
 });
+// Serve frontend
+if (process.env.NODE_ENV === 'production') {
+  const buildPath = path.join(__dirname, '../../frontend/dist');
+  app.use(express.static(buildPath));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(buildPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running...');
+  });
+}
+
 app.use(notFound);
 app.use(errorHandler);
 

@@ -56,7 +56,7 @@ app.get('/health',(req,res)=>{
 });
 // Serve frontend
 if (process.env.NODE_ENV === 'production') {
-  const buildPath = path.join(__dirname, '../../frontend/dist');
+  const buildPath = path.join(__dirname, '../public');
   app.use(express.static(buildPath));
 
   app.get('*', (req, res) => {
